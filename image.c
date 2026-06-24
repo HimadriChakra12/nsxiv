@@ -1,23 +1,23 @@
 /* Copyright 2011-2020 Bert Muennich
- * Copyright 2021-2023 nsxiv contributors
+ * Copyright 2021-2023 rsxiv contributors
  *
- * This file is a part of nsxiv.
+ * This file is a part of rsxiv.
  *
- * nsxiv is free software; you can redistribute it and/or modify
+ * rsxiv is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published
  * by the Free Software Foundation; either version 2 of the License,
  * or (at your option) any later version.
  *
- * nsxiv is distributed in the hope that it will be useful,
+ * rsxiv is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with nsxiv.  If not, see <http://www.gnu.org/licenses/>.
+ * along with rsxiv.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "nsxiv.h"
+#include "rsxiv.h"
 #define INCLUDE_IMAGE_CONFIG
 #include "config.h"
 
@@ -290,7 +290,7 @@ bool img_load(img_t *img, const fileinfo_t *file)
 		return false;
 
 	/* ensure that the image's timestamp is checked when loading from cache
-	 * to avoid issues like: https://codeberg.org/nsxiv/nsxiv/issues/436
+	 * to avoid issues like: https://codeberg.org/rsxiv/rsxiv/issues/436
 	 */
 	imlib_image_set_changes_on_disk();
 
@@ -337,7 +337,7 @@ CLEANUP void img_close(img_t *img, bool decache)
 			img_free(img->multi.frames[i].im, decache);
 		/* NOTE: the above only decaches the "composed frames",
 		 * and not the "raw frame" that's associated with the file.
-		 * which leads to issues like: https://codeberg.org/nsxiv/nsxiv/issues/456
+		 * which leads to issues like: https://codeberg.org/rsxiv/rsxiv/issues/456
 		 */
 		if (decache) {
 			curpath = files[fileidx].path;

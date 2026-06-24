@@ -3,13 +3,13 @@
 static const int WIN_WIDTH  = 800;
 static const int WIN_HEIGHT = 600;
 
-static const char *WIN_BG[]   = { "Nsxiv.window.background",   "#282828" };
-static const char *WIN_FG[]   = { "Nsxiv.window.foreground",   "wheat" };
-static const char *MARK_FG[]  = { "Nsxiv.mark.foreground",      NULL };
+static const char *WIN_BG[]   = { "rsxiv.window.background",   "#282828" };
+static const char *WIN_FG[]   = { "rsxiv.window.foreground",   "wheat" };
+static const char *MARK_FG[]  = { "rsxiv.mark.foreground",      NULL };
 #if HAVE_LIBFONTS
-static const char *BAR_BG[]   = { "Nsxiv.bar.background",       NULL };
-static const char *BAR_FG[]   = { "Nsxiv.bar.foreground",       NULL };
-static const char *BAR_FONT[] = { "Nsxiv.bar.font",            "monospace-8" };
+static const char *BAR_BG[]   = { "rsxiv.bar.background",       NULL };
+static const char *BAR_FG[]   = { "rsxiv.bar.foreground",       NULL };
+static const char *BAR_FONT[] = { "rsxiv.bar.font",            "monospace-8" };
 
 static const bool TOP_STATUSBAR = false;
 #endif
