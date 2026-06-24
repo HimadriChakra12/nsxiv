@@ -1,0 +1,132 @@
+#!/bin/sh
+
+# The key combo argument has the following form: "[C-][M-][S-]KEY",
+# where C/M/S indicate Ctrl/Meta(Alt)/Shift modifier states and KEY is the X
+# keysym as listed in /usr/include/X11/keysymdef.h without the "XK_" prefix.
+
+rotate() {
+	degree="$1"
+	tr '\n' '\0' | xargs -0 realpath | sort | uniq | while read file; do
+		case "$(file -b -i "$file")" in
+		image/jpeg*) jpegtran -rotate "$degree" -copy all -outfile "$file" "$file" ;;
+		*)           mogrify  -rotate "$degree" "$file" ;;
+		esac
+	done
+}
+
+crop() {
+#!/bin/bash
+
+while read -r file; do
+    dir="$(dirname "$file")"
+    base="$(basename "$file")"
+    name="${base%.*}"
+    ext="${base##*.}"
+
+    # 1️⃣ Select ratio via rofi
+    ratio_choice=$(printf "free\nsquare\n16:9\n4:3\n3:4\n9:16" | rofi -dmenu -p "Crop ratio")
+    case "$ratio_choice" in
+        square) ratio_type="square" ;;
+        16:9)   ratio_type="16:9" ;;
+        4:3)    ratio_type="4:3" ;;
+        3:4)    ratio_type="3:4" ;;
+        9:16)   ratio_type="9:16" ;;
+        *)      ratio_type="free" ;;
+    esac
+
+    # 2️⃣ Open rsxiv fullscreen without scaling
+    rsxiv -f "$file" &
+    rsxiv_pid=$!
+    sleep 0.2
+
+    while true; do
+        # 3️⃣ Freeform selection
+        selection=$(slop -f "%x %y %w %h") || break
+        read X Y W H <<< "$selection"
+
+        # 4️⃣ Apply ratio enforcement dynamically
+        case "$ratio_type" in
+            square)
+                if [ "$W" -gt "$H" ]; then H=$W; else W=$H; fi
+                ;;
+            16:9)
+                if [ "$W/$H" -gt 1.7778 ]; then H=$(( W * 9 / 16 )); else W=$(( H * 16 / 9 )); fi
+                ;;
+            4:3)
+                if [ "$W/$H" -gt 1.3333 ]; then H=$(( W * 3 / 4 )); else W=$(( H * 4 / 3 )); fi
+                ;;
+            3:4)
+                if [ "$W/$H" -gt 0.75 ]; then H=$(( W * 4 / 3 )); else W=$(( H * 3 / 4 )); fi
+                ;;
+            9:16)
+                if [ "$W/$H" -gt 0.5625 ]; then H=$(( W * 16 / 9 )); else W=$(( H * 9 / 16 )); fi
+                ;;
+        esac
+
+        # 5️⃣ Prevent invalid crops
+        [ "$W" -le 0 ] && [ "$H" -le 0 ] && continue
+
+        tmp="/tmp/${name}_preview.$ext"
+
+        # 6️⃣ Crop preview
+        magick "$file" -auto-orient -crop "${W}x${H}+${X}+${Y}" +repage "$tmp"
+
+        # 7️⃣ Show preview
+        rsxiv "$tmp" &
+        preview_pid=$!
+
+        # 8️⃣ Confirm via rofi
+        action=$(printf "Save\nRetry\nCancel" | rofi -dmenu -p "Crop action")
+        kill "$preview_pid" 2>/dev/null
+
+        case "$action" in
+            Save)
+                mv "$tmp" "$dir/${name}_cropped.$ext"
+                break
+                ;;
+            Retry)
+                rm -f "$tmp"
+                continue
+                ;;
+            *)
+                rm -f "$tmp"
+                break
+                ;;
+        esac
+    done
+
+    kill "$rsxiv_pid" 2>/dev/null
+done
+}
+
+case "$1" in
+"C-x")      xclip -in -filter | tr '\n' ' ' | xclip -in -selection clipboard ;;
+"y")      while read file; do xclip -selection clipboard -target image/png "$file"; done ;;
+"C-e")      while read file; do urxvt -bg "#444" -fg "#eee" -sl 0 -title "$file" -e sh -c "exiv2 pr -q -pa '$file' | less" & done ;;
+"C-g")      tr '\n' '\0' | xargs -0 gimp & ;;
+"C-w")
+    while read -r file; do
+        TARGET="$HOME/.dotfiles/i3/Wallpaper/Wallpaper"
+        rm -f "$TARGET"
+        ln -s "$file" "$TARGET"
+        rsxiv -B "$file"
+        notify-send "Wallpaper Changed" "Set to $file"
+    done
+    ;;
+"c")
+    while read -r file; do
+        "$HOME/.config/rsxiv/exec/crop.py" $file
+    done
+    ;;
+"C-e")
+    while read -r file; do
+        sxat -f $file
+    done
+    ;;
+"d")
+    while read -r file; do
+        rm $file
+    done
+    ;;
+esac
+
