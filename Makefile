@@ -36,10 +36,10 @@ define compile_c
 	( \
 		flock -w 10 200; \
 		if [ $$rc -eq 0 ]; then \
-			printf "$(GREEN)%-8s$(RESET) $(BOLD)%-30s$(RESET) %-30s\t$(CYAN)%dms$(RESET)\n" \
+			printf "$(GREEN)%-8s$(RESET) $(BOLD)%-15s$(RESET) %-20s\t$(CYAN)%dms$(RESET)\n" \
 				"$(CC)" "$<" "$@" "$$ms"; \
 		else \
-			printf "$(GREEN)%-8s$(RESET) $(BOLD)%-30s$(RESET) FAILED\t$(CYAN)%dms$(RESET)\n" \
+			printf "$(GREEN)%-8s$(RESET) $(BOLD)%-15s$(RESET) FAILED\t$(CYAN)%dms$(RESET)\n" \
 				"$(CC)" "$<" "$$ms"; \
 			printf "%s\n" "$$out"; \
 		fi \
@@ -49,7 +49,7 @@ endef
 
 define link_bin
 	@t=$$(date +%s%N); \
-	printf " $(GREEN)link$(RESET)%-4s$(BOLD)$@$(RESET) %-58s"; \
+	printf " $(GREEN)link$(RESET)%-4s$(BOLD)$@$(RESET)%-35s"; \
 	$(CC) $(LDFLAGS) -o $@ $(objs) $(rsxiv_ldlibs); \
 	rc=$$?; \
 	ms=$$(( ($$(date +%s%N) - t) / 1000000 )); \
@@ -67,7 +67,7 @@ rsxiv: $(objs)
 .c.o:
 	$(call compile_c)
 
-$(objs): Makefile config.mk rsxiv.h config.h commands.h
+$(objs): Makefile rsxiv.mk rsxiv.h config.h commands.h
 options.o: version.h optparse.h
 window.o: icon/data.h utf8.h
 
@@ -77,7 +77,7 @@ config.h:
 	@echo "GEN $@"
 	@cp config.def.h $@
 
-version.h: config.mk .git/index
+version.h: rsxiv.mk .git/index
 	@v="$$(git describe 2>/dev/null || true)"; \
 	payload=$$(printf '#define VERSION "%s"' "$${v:-$(VERSION)}"); \
 	if ! printf '%s\n' "$$payload" | cmp -s - "$@" 2>/dev/null; then \
